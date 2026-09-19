@@ -233,6 +233,15 @@ public class TVCommander: WebSocketDelegate {
             }
         }
         connection.start(queue: queue)
+        queue.asyncAfter(deadline: .now() + 2) {
+            switch connection.state {
+            case .ready, .cancelled, .failed:
+                break
+            default:
+                connection.cancel()
+                completion(.wakeOnLANConnectionError(NWError.posix(.ETIMEDOUT)))
+            }
+        }
     }
 }
 
