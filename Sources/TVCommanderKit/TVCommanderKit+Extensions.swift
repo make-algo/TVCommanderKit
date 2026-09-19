@@ -12,7 +12,15 @@ import Foundation
 extension Data {
     static func magicPacket(from device: TVWakeOnLANDevice) -> Data {
         var magicPacketRaw = [UInt8](repeating: 0xFF, count: 6)
-        let macAddressData = device.mac.split(separator: ":").compactMap { UInt8($0, radix: 16) }
+        let hex = device.mac.uppercased().filter { $0.isHexDigit }
+        guard hex.count == 12 else { return Data() }
+        var macAddressData: [UInt8] = []
+        var index = hex.startIndex
+        while index < hex.endIndex {
+            let next = hex.index(index, offsetBy: 2)
+            macAddressData.append(UInt8(hex[index..<next], radix: 16) ?? 0)
+            index = next
+        }
         for _ in 0..<16 { magicPacketRaw.append(contentsOf: macAddressData) }
         return Data(magicPacketRaw)
     }
