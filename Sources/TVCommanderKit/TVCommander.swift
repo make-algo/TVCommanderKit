@@ -92,6 +92,26 @@ public class TVCommander: WebSocketDelegate {
         sendCommandOverWebSocket(.createClickCommand(key))
     }
 
+    /// Send a key press or release, e.g. to emulate holding a remote button.
+    public func sendRemoteCommand(key: TVRemoteCommand.Params.ControlKey, command: TVRemoteCommand.Params.Command) {
+        guard isConnected else {
+            handleError(.remoteCommandNotConnectedToTV)
+            return
+        }
+        guard authStatus == .allowed else {
+            handleError(.remoteCommandAuthenticationStatusNotAllowed)
+            return
+        }
+        switch command {
+        case .click, .textInput:
+            sendCommandOverWebSocket(.createClickCommand(key))
+        case .press:
+            sendCommandOverWebSocket(.createPressCommand(key))
+        case .release:
+            sendCommandOverWebSocket(.createReleaseCommand(key))
+        }
+    }
+
     /// Send a text as text field input to the TV. Text will replace existing text in TV textfield.
     public func sendText(_ text: String) {
         guard isConnected else {
